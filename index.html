@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valeo CRM Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --valeo-blue:  #041b3c;
+  --valeo-green: #76ff03;
+  --valeo-mid:   #0072ce;
+  --valeo-dark:  #003d9b;
+  --surface:     #ffffff;
+  --surface-dim: #f1f5f9;
+  --n100: #e4eaf0;
+  --n300: #9aaab8;
+  --n600: #4a6070;
+  --n900: #1a2f3f;
+  --b50:  #ddeef9;
+  --b200: #7ab8e0;
+  --b500: #2e7fc0;
+  --b800: #0d3d6e;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--surface-dim);
+  color: var(--n900);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--valeo-blue);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,.35);
+}
+.header-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,.15);
+}
+.header-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--n300);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.header-date {
+  margin-left: auto;
+  font-size: 12px;
+  color: rgba(255,255,255,.35);
+}
+
+/* ── MAIN ── */
+main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (min-width: 768px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.kpi-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  border-left: 4px solid var(--valeo-mid);
+}
+.kpi-card.c-green  { border-left-color: var(--valeo-green); }
+.kpi-card.c-dark   { border-left-color: var(--valeo-dark);  }
+.kpi-card.c-n300   { border-left-color: var(--n300);        }
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n600);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--valeo-blue);
+  line-height: 1;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--n300);
+}
+
+/* ── SECTION CARD ── */
+.section-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--valeo-blue);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--n100);
+}
+
+/* ── CHARTS GRID ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 768px) { .charts-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.chart-wrap { position: relative; height: 300px; }
+.chart-wrap-sm { position: relative; height: 260px; }
+
+/* ── TABLE ── */
+.table-filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n600);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+select {
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  padding: 7px 12px;
+  border: 1.5px solid var(--n100);
+  border-radius: 7px;
+  color: var(--valeo-blue);
+  background: var(--surface);
+  cursor: pointer;
+  outline: none;
+  min-width: 170px;
+}
+select:focus { border-color: var(--valeo-mid); }
+
+.table-meta {
+  font-size: 12px;
+  color: var(--n300);
+  margin-bottom: 10px;
+}
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--surface-dim); }
+th {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--n600);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--n100);
+  white-space: nowrap;
+}
+tbody tr:hover { background: var(--surface-dim); }
+
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.b-won  { background: var(--valeo-green); color: var(--valeo-blue); }
+.b-lost { background: var(--n100);        color: var(--n600);        }
+.b-neg  { background: var(--valeo-mid);   color: #fff;               }
+.b-prop { background: var(--b200);        color: var(--valeo-blue);  }
+.b-qual { background: var(--b50);         color: var(--valeo-blue);  }
+
+/* ── PAGINATION ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 16px;
+}
+.page-btn {
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border: 1.5px solid var(--n100);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--valeo-mid);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.page-btn:hover:not(:disabled) { background: var(--b50); border-color: var(--valeo-mid); }
+.page-btn:disabled { color: var(--n300); cursor: default; }
+#page-info { font-size: 13px; color: var(--n600); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header>
+  <!-- Valeo Logo (inline SVG) -->
+  <svg viewBox="0 0 220 56" width="148" height="38" aria-label="Valeo logo">
+    <text x="4" y="40"
+          font-family="Montserrat, sans-serif"
+          font-weight="800"
+          font-size="40"
+          fill="#76ff03"
+          letter-spacing="-1.5">Valeo</text>
+    <!-- Swoosh: V-dip then rightward curve -->
+    <path d="M3 50 L18 33 L33 50 C65 67 140 55 217 38"
+          stroke="#4a6070" stroke-width="5" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <div class="header-divider"></div>
+  <span class="header-title">CRM Dashboard</span>
+  <span class="header-date" id="header-date"></span>
+</header>
+
+<!-- ═══════════════════════════════ MAIN ═════════════════════════════════ -->
+<main>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Toplam Boru Hattı</div>
+      <div class="kpi-value" id="kpi-toplam">—</div>
+      <div class="kpi-sub">Tüm fırsatlar</div>
+    </div>
+    <div class="kpi-card c-green">
+      <div class="kpi-label">Kazanılan Fırsatlar</div>
+      <div class="kpi-value" id="kpi-kazanilan">—</div>
+      <div class="kpi-sub">Closed Won</div>
+    </div>
+    <div class="kpi-card c-dark">
+      <div class="kpi-label">Kazanma Oranı</div>
+      <div class="kpi-value" id="kpi-oran">—</div>
+      <div class="kpi-sub">Won / (Won + Lost)</div>
+    </div>
+    <div class="kpi-card c-n300">
+      <div class="kpi-label">Ağırlıklı Pipeline</div>
+      <div class="kpi-value" id="kpi-agirlikli">—</div>
+      <div class="kpi-sub">Olasılık × Tutar</div>
+    </div>
+  </div>
+
+  <!-- CHARTS GRID (2 col) -->
+  <div class="charts-grid">
+
+    <div class="section-card">
+      <h2 class="section-title">Aşama Dağılımı</h2>
+      <div class="chart-wrap"><canvas id="stageChart"></canvas></div>
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">Bölgeye Göre Kazanılan Gelir</h2>
+      <div class="chart-wrap"><canvas id="regionChart"></canvas></div>
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">Satış Temsilcisi Performansı</h2>
+      <div class="chart-wrap"><canvas id="repChart"></canvas></div>
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">Ürün Dağılımı</h2>
+      <div class="chart-wrap-sm"><canvas id="productChart"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- SOURCE CHART — full width -->
+  <div class="section-card">
+    <h2 class="section-title">Kaynak Kanalı Dağılımı</h2>
+    <div style="max-width:460px;margin:0 auto;">
+      <div class="chart-wrap-sm"><canvas id="sourceChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- DEALS TABLE -->
+  <div class="section-card">
+    <h2 class="section-title">Fırsat Listesi</h2>
+
+    <div class="table-filters">
+      <div class="filter-group">
+        <label class="filter-label">Aşama</label>
+        <select id="filter-asama" onchange="applyFilter()">
+          <option value="">Tümü</option>
+          <option value="Qualification">Nitelendirme</option>
+          <option value="Proposal">Teklif</option>
+          <option value="Negotiation">Müzakere</option>
+          <option value="Closed Won">Kazanıldı</option>
+          <option value="Closed Lost">Kaybedildi</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Satış Temsilcisi</label>
+        <select id="filter-rep" onchange="applyFilter()">
+          <option value="">Tümü</option>
+          <option>Ayşe Kaya</option>
+          <option>Burak Şahin</option>
+          <option>Deniz Aydın</option>
+          <option>Elif Yılmaz</option>
+          <option>Mehmet Demir</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-meta" id="table-meta"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fırsat No</th>
+            <th>Müşteri</th>
+            <th>Temsilci</th>
+            <th>Bölge</th>
+            <th>Ürün</th>
+            <th>Kaynak</th>
+            <th>Aşama</th>
+            <th>Tutar</th>
+            <th>Olasılık</th>
+            <th>Gün Açık</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button class="page-btn" id="btn-prev" onclick="changePage(-1)">← Önceki</button>
+      <span id="page-info"></span>
+      <button class="page-btn" id="btn-next" onclick="changePage(1)">Sonraki →</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// DATA — 120 satır CRM pipeline verisi
+// ════════════════════════════════════════════════════════════════
+// Alanlar: id, m(müşteri), rep(temsilci), b(bölge), u(ürün),
+//          k(kaynak), a(aşama), t(tutar TRY), o(olasılık%), gun(açık gün)
+const P = [
+  {id:"OPP-1001",m:"Müşteri 1",  rep:"Elif Yılmaz",  b:"Marmara",    u:"Danışmanlık", k:"Referral", a:"Closed Won",  t:43000, o:100,gun:89},
+  {id:"OPP-1002",m:"Müşteri 2",  rep:"Deniz Aydın",  b:"Marmara",    u:"ERP Lisans",  k:"Inbound",  a:"Negotiation", t:31000, o:70, gun:32},
+  {id:"OPP-1003",m:"Müşteri 3",  rep:"Deniz Aydın",  b:"Karadeniz",  u:"Entegrasyon", k:"Referral", a:"Qualification",t:115000,o:20, gun:60},
+  {id:"OPP-1004",m:"Müşteri 4",  rep:"Deniz Aydın",  b:"İç Anadolu", u:"Danışmanlık", k:"Inbound",  a:"Closed Won",  t:186000,o:100,gun:46},
+  {id:"OPP-1005",m:"Müşteri 5",  rep:"Ayşe Kaya",    b:"Ege",        u:"ERP Lisans",  k:"Outbound", a:"Proposal",    t:31000, o:45, gun:15},
+  {id:"OPP-1006",m:"Müşteri 6",  rep:"Ayşe Kaya",    b:"İç Anadolu", u:"Bakım/Destek",k:"Inbound",  a:"Negotiation", t:145000,o:70, gun:51},
+  {id:"OPP-1007",m:"Müşteri 7",  rep:"Elif Yılmaz",  b:"Karadeniz",  u:"Eğitim",      k:"Web",      a:"Proposal",    t:155000,o:45, gun:11},
+  {id:"OPP-1008",m:"Müşteri 8",  rep:"Elif Yılmaz",  b:"Ege",        u:"Danışmanlık", k:"Inbound",  a:"Closed Won",  t:229000,o:100,gun:51},
+  {id:"OPP-1009",m:"Müşteri 9",  rep:"Ayşe Kaya",    b:"Akdeniz",    u:"Danışmanlık", k:"Outbound", a:"Negotiation", t:102000,o:70, gun:29},
+  {id:"OPP-1010",m:"Müşteri 10", rep:"Ayşe Kaya",    b:"Marmara",    u:"Entegrasyon", k:"Referral", a:"Negotiation", t:194000,o:70, gun:23},
+  {id:"OPP-1011",m:"Müşteri 11", rep:"Burak Şahin",  b:"Akdeniz",    u:"Danışmanlık", k:"Web",      a:"Proposal",    t:183000,o:45, gun:10},
+  {id:"OPP-1012",m:"Müşteri 12", rep:"Mehmet Demir", b:"Marmara",    u:"Eğitim",      k:"Fuar",     a:"Closed Won",  t:24000, o:100,gun:75},
+  {id:"OPP-1013",m:"Müşteri 13", rep:"Ayşe Kaya",    b:"Ege",        u:"Bakım/Destek",k:"Fuar",     a:"Closed Won",  t:44000, o:100,gun:20},
+  {id:"OPP-1014",m:"Müşteri 14", rep:"Mehmet Demir", b:"Karadeniz",  u:"Bakım/Destek",k:"Web",      a:"Negotiation", t:237000,o:70, gun:54},
+  {id:"OPP-1015",m:"Müşteri 15", rep:"Ayşe Kaya",    b:"Ege",        u:"Entegrasyon", k:"Referral", a:"Closed Lost", t:134000,o:0,  gun:9},
+  {id:"OPP-1016",m:"Müşteri 16", rep:"Elif Yılmaz",  b:"Ege",        u:"Entegrasyon", k:"Fuar",     a:"Negotiation", t:24000, o:70, gun:51},
+  {id:"OPP-1017",m:"Müşteri 17", rep:"Deniz Aydın",  b:"Akdeniz",    u:"ERP Lisans",  k:"Web",      a:"Negotiation", t:182000,o:70, gun:90},
+  {id:"OPP-1018",m:"Müşteri 18", rep:"Deniz Aydın",  b:"İç Anadolu", u:"ERP Lisans",  k:"Outbound", a:"Closed Won",  t:83000, o:100,gun:23},
+  {id:"OPP-1019",m:"Müşteri 19", rep:"Burak Şahin",  b:"Marmara",    u:"Entegrasyon", k:"Outbound", a:"Closed Lost", t:203000,o:0,  gun:67},
+  {id:"OPP-1020",m:"Müşteri 20", rep:"Elif Yılmaz",  b:"İç Anadolu", u:"Entegrasyon", k:"Web",      a:"Closed Won",  t:58000, o:100,gun:50},
+  {id:"OPP-1021",m:"Müşteri 21", rep:"Mehmet Demir", b:"Karadeniz",  u:"ERP Lisans",  k:"Web",      a:"Closed Lost", t:161000,o:0,  gun:65},
+  {id:"OPP-1022",m:"Müşteri 22", rep:"Elif Yılmaz",  b:"Marmara",    u:"Danışmanlık", k:"Outbound", a:"Closed Lost", t:22000, o:0,  gun:75},
+  {id:"OPP-1023",m:"Müşteri 23", rep:"Elif Yılmaz",  b:"Marmara",    u:"Entegrasyon", k:"Inbound",  a:"Closed Won",  t:204000,o:100,gun:19},
+  {id:"OPP-1024",m:"Müşteri 24", rep:"Burak Şahin",  b:"Karadeniz",  u:"Entegrasyon", k:"Web",      a:"Qualification",t:116000,o:20, gun:72},
+  {id:"OPP-1025",m:"Müşteri 25", rep:"Mehmet Demir", b:"İç Anadolu", u:"Bakım/Destek",k:"Outbound", a:"Proposal",    t:238000,o:45, gun:60},
+  {id:"OPP-1026",m:"Müşteri 26", rep:"Elif Yılmaz",  b:"Ege",        u:"ERP Lisans",  k:"Outbound", a:"Proposal",    t:158000,o:45, gun:32},
+  {id:"OPP-1027",m:"Müşteri 27", rep:"Deniz Aydın",  b:"Ege",        u:"Danışmanlık", k:"Inbound",  a:"Qualification",t:25000, o:20, gun:45},
+  {id:"OPP-1028",m:"Müşteri 28", rep:"Elif Yılmaz",  b:"Karadeniz",  u:"Danışmanlık", k:"Fuar",     a:"Proposal",    t:146000,o:45, gun:76},
+  {id:"OPP-1029",m:"Müşteri 29", rep:"Deniz Aydın",  b:"Akdeniz",    u:"Bakım/Destek",k:"Fuar",     a:"Proposal",    t:56000, o:45, gun:15},
+  {id:"OPP-1030",m:"Müşteri 30", rep:"Burak Şahin",  b:"İç Anadolu", u:"ERP Lisans",  k:"Fuar",     a:"Proposal",    t:180000,o:45, gun:10},
+  {id:"OPP-1031",m:"Müşteri 31", rep:"Burak Şahin",  b:"İç Anadolu", u:"Danışmanlık", k:"Inbound",  a:"Closed Won",  t:57000, o:100,gun:71},
+  {id:"OPP-1032",m:"Müşteri 32", rep:"Burak Şahin",  b:"Ege",        u:"Bakım/Destek",k:"Outbound", a:"Proposal",    t:71000, o:45, gun:59},
+  {id:"OPP-1033",m:"Müşteri 33", rep:"Deniz Aydın",  b:"Marmara",    u:"ERP Lisans",  k:"Web",      a:"Qualification",t:31000, o:20, gun:24},
+  {id:"OPP-1034",m:"Müşteri 34", rep:"Burak Şahin",  b:"Akdeniz",    u:"ERP Lisans",  k:"Fuar",     a:"Negotiation", t:50000, o:70, gun:3},
+  {id:"OPP-1035",m:"Müşteri 35", rep:"Burak Şahin",  b:"İç Anadolu", u:"Eğitim",      k:"Fuar",     a:"Closed Lost", t:116000,o:0,  gun:87},
+  {id:"OPP-1036",m:"Müşteri 36", rep:"Burak Şahin",  b:"Ege",        u:"ERP Lisans",  k:"Referral", a:"Qualification",t:156000,o:20, gun:10},
+  {id:"OPP-1037",m:"Müşteri 37", rep:"Ayşe Kaya",    b:"Marmara",    u:"Entegrasyon", k:"Fuar",     a:"Qualification",t:243000,o:20, gun:23},
+  {id:"OPP-1038",m:"Müşteri 38", rep:"Elif Yılmaz",  b:"Karadeniz",  u:"ERP Lisans",  k:"Referral", a:"Qualification",t:160000,o:20, gun:89},
+  {id:"OPP-1039",m:"Müşteri 39", rep:"Mehmet Demir", b:"Akdeniz",    u:"Danışmanlık", k:"Web",      a:"Qualification",t:156000,o:20, gun:82},
+  {id:"OPP-1040",m:"Müşteri 40", rep:"Elif Yılmaz",  b:"Akdeniz",    u:"Entegrasyon", k:"Web",      a:"Closed Won",  t:88000, o:100,gun:29},
+  {id:"OPP-1041",m:"Müşteri 41", rep:"Ayşe Kaya",    b:"Ege",        u:"Eğitim",      k:"Referral", a:"Proposal",    t:125000,o:45, gun:12},
+  {id:"OPP-1042",m:"Müşteri 42", rep:"Elif Yılmaz",  b:"Akdeniz",    u:"ERP Lisans",  k:"Web",      a:"Negotiation", t:26000, o:70, gun:30},
+  {id:"OPP-1043",m:"Müşteri 43", rep:"Deniz Aydın",  b:"İç Anadolu", u:"ERP Lisans",  k:"Outbound", a:"Qualification",t:233000,o:20, gun:50},
+  {id:"OPP-1044",m:"Müşteri 44", rep:"Ayşe Kaya",    b:"Ege",        u:"Eğitim",      k:"Web",      a:"Proposal",    t:164000,o:45, gun:4},
+  {id:"OPP-1045",m:"Müşteri 45", rep:"Deniz Aydın",  b:"İç Anadolu", u:"Danışmanlık", k:"Inbound",  a:"Closed Lost", t:75000, o:0,  gun:16},
+  {id:"OPP-1046",m:"Müşteri 46", rep:"Deniz Aydın",  b:"Ege",        u:"Danışmanlık", k:"Web",      a:"Proposal",    t:191000,o:45, gun:29},
+  {id:"OPP-1047",m:"Müşteri 47", rep:"Ayşe Kaya",    b:"Karadeniz",  u:"ERP Lisans",  k:"Inbound",  a:"Negotiation", t:170000,o:70, gun:38},
+  {id:"OPP-1048",m:"Müşteri 48", rep:"Elif Yılmaz",  b:"Marmara",    u:"Eğitim",      k:"Referral", a:"Proposal",    t:49000, o:45, gun:73},
+  {id:"OPP-1049",m:"Müşteri 49", rep:"Burak Şahin",  b:"Karadeniz",  u:"Danışmanlık", k:"Inbound",  a:"Qualification",t:147000,o:20, gun:50},
+  {id:"OPP-1050",m:"Müşteri 50", rep:"Deniz Aydın",  b:"Karadeniz",  u:"ERP Lisans",  k:"Referral", a:"Qualification",t:86000, o:20, gun:8},
+  {id:"OPP-1051",m:"Müşteri 51", rep:"Ayşe Kaya",    b:"Ege",        u:"Eğitim",      k:"Inbound",  a:"Closed Won",  t:207000,o:100,gun:55},
+  {id:"OPP-1052",m:"Müşteri 52", rep:"Deniz Aydın",  b:"Ege",        u:"Danışmanlık", k:"Referral", a:"Closed Lost", t:212000,o:0,  gun:55},
+  {id:"OPP-1053",m:"Müşteri 53", rep:"Elif Yılmaz",  b:"Ege",        u:"Bakım/Destek",k:"Outbound", a:"Closed Won",  t:213000,o:100,gun:37},
+  {id:"OPP-1054",m:"Müşteri 54", rep:"Mehmet Demir", b:"Marmara",    u:"Bakım/Destek",k:"Inbound",  a:"Proposal",    t:64000, o:45, gun:61},
+  {id:"OPP-1055",m:"Müşteri 55", rep:"Ayşe Kaya",    b:"İç Anadolu", u:"Danışmanlık", k:"Referral", a:"Closed Won",  t:14000, o:100,gun:54},
+  {id:"OPP-1056",m:"Müşteri 56", rep:"Ayşe Kaya",    b:"İç Anadolu", u:"Eğitim",      k:"Outbound", a:"Closed Lost", t:172000,o:0,  gun:54},
+  {id:"OPP-1057",m:"Müşteri 57", rep:"Deniz Aydın",  b:"İç Anadolu", u:"Eğitim",      k:"Inbound",  a:"Closed Lost", t:53000, o:0,  gun:36},
+  {id:"OPP-1058",m:"Müşteri 58", rep:"Elif Yılmaz",  b:"Marmara",    u:"Eğitim",      k:"Outbound", a:"Negotiation", t:119000,o:70, gun:17},
+  {id:"OPP-1059",m:"Müşteri 59", rep:"Burak Şahin",  b:"Karadeniz",  u:"Bakım/Destek",k:"Inbound",  a:"Qualification",t:8000,  o:20, gun:71},
+  {id:"OPP-1060",m:"Müşteri 60", rep:"Mehmet Demir", b:"İç Anadolu", u:"Entegrasyon", k:"Outbound", a:"Proposal",    t:88000, o:45, gun:41},
+  {id:"OPP-1061",m:"Müşteri 61", rep:"Deniz Aydın",  b:"İç Anadolu", u:"Bakım/Destek",k:"Outbound", a:"Closed Won",  t:186000,o:100,gun:73},
+  {id:"OPP-1062",m:"Müşteri 62", rep:"Mehmet Demir", b:"Ege",        u:"Danışmanlık", k:"Fuar",     a:"Proposal",    t:165000,o:45, gun:41},
+  {id:"OPP-1063",m:"Müşteri 63", rep:"Burak Şahin",  b:"Karadeniz",  u:"Eğitim",      k:"Outbound", a:"Closed Won",  t:61000, o:100,gun:77},
+  {id:"OPP-1064",m:"Müşteri 64", rep:"Deniz Aydın",  b:"İç Anadolu", u:"Danışmanlık", k:"Fuar",     a:"Negotiation", t:138000,o:70, gun:24},
+  {id:"OPP-1065",m:"Müşteri 65", rep:"Elif Yılmaz",  b:"İç Anadolu", u:"Eğitim",      k:"Web",      a:"Negotiation", t:31000, o:70, gun:89},
+  {id:"OPP-1066",m:"Müşteri 66", rep:"Ayşe Kaya",    b:"Ege",        u:"ERP Lisans",  k:"Referral", a:"Closed Won",  t:19000, o:100,gun:63},
+  {id:"OPP-1067",m:"Müşteri 67", rep:"Deniz Aydın",  b:"Marmara",    u:"Danışmanlık", k:"Web",      a:"Negotiation", t:191000,o:70, gun:66},
+  {id:"OPP-1068",m:"Müşteri 68", rep:"Burak Şahin",  b:"Ege",        u:"ERP Lisans",  k:"Inbound",  a:"Qualification",t:207000,o:20, gun:31},
+  {id:"OPP-1069",m:"Müşteri 69", rep:"Mehmet Demir", b:"Karadeniz",  u:"Danışmanlık", k:"Web",      a:"Negotiation", t:242000,o:70, gun:61},
+  {id:"OPP-1070",m:"Müşteri 70", rep:"Mehmet Demir", b:"Akdeniz",    u:"Entegrasyon", k:"Web",      a:"Closed Won",  t:89000, o:100,gun:81},
+  {id:"OPP-1071",m:"Müşteri 71", rep:"Deniz Aydın",  b:"Akdeniz",    u:"Bakım/Destek",k:"Web",      a:"Closed Won",  t:237000,o:100,gun:63},
+  {id:"OPP-1072",m:"Müşteri 72", rep:"Burak Şahin",  b:"İç Anadolu", u:"Entegrasyon", k:"Outbound", a:"Closed Won",  t:132000,o:100,gun:38},
+  {id:"OPP-1073",m:"Müşteri 73", rep:"Burak Şahin",  b:"Marmara",    u:"Eğitim",      k:"Referral", a:"Closed Won",  t:93000, o:100,gun:72},
+  {id:"OPP-1074",m:"Müşteri 74", rep:"Elif Yılmaz",  b:"Ege",        u:"Danışmanlık", k:"Fuar",     a:"Qualification",t:188000,o:20, gun:11},
+  {id:"OPP-1075",m:"Müşteri 75", rep:"Burak Şahin",  b:"Akdeniz",    u:"Bakım/Destek",k:"Fuar",     a:"Proposal",    t:23000, o:45, gun:56},
+  {id:"OPP-1076",m:"Müşteri 76", rep:"Burak Şahin",  b:"Karadeniz",  u:"Entegrasyon", k:"Inbound",  a:"Closed Lost", t:105000,o:0,  gun:3},
+  {id:"OPP-1077",m:"Müşteri 77", rep:"Ayşe Kaya",    b:"İç Anadolu", u:"Entegrasyon", k:"Fuar",     a:"Closed Won",  t:199000,o:100,gun:80},
+  {id:"OPP-1078",m:"Müşteri 78", rep:"Mehmet Demir", b:"Akdeniz",    u:"Bakım/Destek",k:"Fuar",     a:"Proposal",    t:15000, o:45, gun:46},
+  {id:"OPP-1079",m:"Müşteri 79", rep:"Burak Şahin",  b:"Ege",        u:"Entegrasyon", k:"Referral", a:"Closed Won",  t:144000,o:100,gun:53},
+  {id:"OPP-1080",m:"Müşteri 80", rep:"Deniz Aydın",  b:"Karadeniz",  u:"Bakım/Destek",k:"Inbound",  a:"Closed Won",  t:42000, o:100,gun:26},
+  {id:"OPP-1081",m:"Müşteri 81", rep:"Elif Yılmaz",  b:"İç Anadolu", u:"Bakım/Destek",k:"Referral", a:"Proposal",    t:91000, o:45, gun:51},
+  {id:"OPP-1082",m:"Müşteri 82", rep:"Ayşe Kaya",    b:"Akdeniz",    u:"Bakım/Destek",k:"Inbound",  a:"Proposal",    t:12000, o:45, gun:9},
+  {id:"OPP-1083",m:"Müşteri 83", rep:"Ayşe Kaya",    b:"Ege",        u:"ERP Lisans",  k:"Inbound",  a:"Closed Won",  t:71000, o:100,gun:5},
+  {id:"OPP-1084",m:"Müşteri 84", rep:"Deniz Aydın",  b:"Ege",        u:"ERP Lisans",  k:"Fuar",     a:"Proposal",    t:152000,o:45, gun:62},
+  {id:"OPP-1085",m:"Müşteri 85", rep:"Ayşe Kaya",    b:"İç Anadolu", u:"ERP Lisans",  k:"Web",      a:"Qualification",t:207000,o:20, gun:42},
+  {id:"OPP-1086",m:"Müşteri 86", rep:"Elif Yılmaz",  b:"Karadeniz",  u:"Entegrasyon", k:"Outbound", a:"Qualification",t:181000,o:20, gun:53},
+  {id:"OPP-1087",m:"Müşteri 87", rep:"Mehmet Demir", b:"Marmara",    u:"ERP Lisans",  k:"Referral", a:"Negotiation", t:186000,o:70, gun:90},
+  {id:"OPP-1088",m:"Müşteri 88", rep:"Deniz Aydın",  b:"Marmara",    u:"ERP Lisans",  k:"Web",      a:"Closed Won",  t:96000, o:100,gun:57},
+  {id:"OPP-1089",m:"Müşteri 89", rep:"Ayşe Kaya",    b:"Marmara",    u:"ERP Lisans",  k:"Outbound", a:"Negotiation", t:225000,o:70, gun:65},
+  {id:"OPP-1090",m:"Müşteri 90", rep:"Elif Yılmaz",  b:"Akdeniz",    u:"Danışmanlık", k:"Fuar",     a:"Closed Lost", t:119000,o:0,  gun:69},
+  {id:"OPP-1091",m:"Müşteri 91", rep:"Ayşe Kaya",    b:"Karadeniz",  u:"Bakım/Destek",k:"Web",      a:"Closed Won",  t:127000,o:100,gun:78},
+  {id:"OPP-1092",m:"Müşteri 92", rep:"Ayşe Kaya",    b:"İç Anadolu", u:"Eğitim",      k:"Inbound",  a:"Closed Lost", t:233000,o:0,  gun:34},
+  {id:"OPP-1093",m:"Müşteri 93", rep:"Burak Şahin",  b:"Karadeniz",  u:"Eğitim",      k:"Fuar",     a:"Negotiation", t:15000, o:70, gun:44},
+  {id:"OPP-1094",m:"Müşteri 94", rep:"Mehmet Demir", b:"Akdeniz",    u:"Eğitim",      k:"Outbound", a:"Proposal",    t:79000, o:45, gun:74},
+  {id:"OPP-1095",m:"Müşteri 95", rep:"Elif Yılmaz",  b:"Karadeniz",  u:"Danışmanlık", k:"Inbound",  a:"Closed Lost", t:192000,o:0,  gun:65},
+  {id:"OPP-1096",m:"Müşteri 96", rep:"Deniz Aydın",  b:"Ege",        u:"Bakım/Destek",k:"Fuar",     a:"Closed Won",  t:210000,o:100,gun:14},
+  {id:"OPP-1097",m:"Müşteri 97", rep:"Ayşe Kaya",    b:"Ege",        u:"Eğitim",      k:"Referral", a:"Proposal",    t:177000,o:45, gun:50},
+  {id:"OPP-1098",m:"Müşteri 98", rep:"Burak Şahin",  b:"Karadeniz",  u:"Entegrasyon", k:"Fuar",     a:"Negotiation", t:92000, o:70, gun:61},
+  {id:"OPP-1099",m:"Müşteri 99", rep:"Ayşe Kaya",    b:"İç Anadolu", u:"Danışmanlık", k:"Inbound",  a:"Proposal",    t:88000, o:45, gun:71},
+  {id:"OPP-1100",m:"Müşteri 100",rep:"Mehmet Demir", b:"Ege",        u:"Eğitim",      k:"Fuar",     a:"Proposal",    t:193000,o:45, gun:70},
+  {id:"OPP-1101",m:"Müşteri 101",rep:"Deniz Aydın",  b:"İç Anadolu", u:"Eğitim",      k:"Referral", a:"Closed Lost", t:66000, o:0,  gun:25},
+  {id:"OPP-1102",m:"Müşteri 102",rep:"Ayşe Kaya",    b:"Marmara",    u:"Eğitim",      k:"Referral", a:"Closed Won",  t:19000, o:100,gun:73},
+  {id:"OPP-1103",m:"Müşteri 103",rep:"Ayşe Kaya",    b:"Ege",        u:"ERP Lisans",  k:"Fuar",     a:"Negotiation", t:231000,o:70, gun:76},
+  {id:"OPP-1104",m:"Müşteri 104",rep:"Ayşe Kaya",    b:"Akdeniz",    u:"Danışmanlık", k:"Outbound", a:"Negotiation", t:21000, o:70, gun:64},
+  {id:"OPP-1105",m:"Müşteri 105",rep:"Elif Yılmaz",  b:"Marmara",    u:"Entegrasyon", k:"Inbound",  a:"Proposal",    t:169000,o:45, gun:22},
+  {id:"OPP-1106",m:"Müşteri 106",rep:"Mehmet Demir", b:"Karadeniz",  u:"Danışmanlık", k:"Inbound",  a:"Closed Lost", t:38000, o:0,  gun:56},
+  {id:"OPP-1107",m:"Müşteri 107",rep:"Deniz Aydın",  b:"Karadeniz",  u:"Entegrasyon", k:"Referral", a:"Closed Won",  t:105000,o:100,gun:59},
+  {id:"OPP-1108",m:"Müşteri 108",rep:"Ayşe Kaya",    b:"Karadeniz",  u:"Entegrasyon", k:"Outbound", a:"Closed Lost", t:166000,o:0,  gun:81},
+  {id:"OPP-1109",m:"Müşteri 109",rep:"Elif Yılmaz",  b:"Ege",        u:"ERP Lisans",  k:"Outbound", a:"Negotiation", t:48000, o:70, gun:25},
+  {id:"OPP-1110",m:"Müşteri 110",rep:"Deniz Aydın",  b:"Marmara",    u:"Bakım/Destek",k:"Fuar",     a:"Qualification",t:184000,o:20, gun:40},
+  {id:"OPP-1111",m:"Müşteri 111",rep:"Elif Yılmaz",  b:"Ege",        u:"Bakım/Destek",k:"Outbound", a:"Proposal",    t:26000, o:45, gun:36},
+  {id:"OPP-1112",m:"Müşteri 112",rep:"Deniz Aydın",  b:"Ege",        u:"Danışmanlık", k:"Web",      a:"Proposal",    t:173000,o:45, gun:37},
+  {id:"OPP-1113",m:"Müşteri 113",rep:"Mehmet Demir", b:"Marmara",    u:"Entegrasyon", k:"Outbound", a:"Qualification",t:199000,o:20, gun:39},
+  {id:"OPP-1114",m:"Müşteri 114",rep:"Burak Şahin",  b:"Marmara",    u:"Bakım/Destek",k:"Outbound", a:"Negotiation", t:249000,o:70, gun:67},
+  {id:"OPP-1115",m:"Müşteri 115",rep:"Deniz Aydın",  b:"Akdeniz",    u:"ERP Lisans",  k:"Web",      a:"Proposal",    t:235000,o:45, gun:44},
+  {id:"OPP-1116",m:"Müşteri 116",rep:"Deniz Aydın",  b:"İç Anadolu", u:"Entegrasyon", k:"Referral", a:"Qualification",t:158000,o:20, gun:89},
+  {id:"OPP-1117",m:"Müşteri 117",rep:"Ayşe Kaya",    b:"Karadeniz",  u:"Bakım/Destek",k:"Referral", a:"Qualification",t:140000,o:20, gun:38},
+  {id:"OPP-1118",m:"Müşteri 118",rep:"Mehmet Demir", b:"Karadeniz",  u:"ERP Lisans",  k:"Fuar",     a:"Proposal",    t:128000,o:45, gun:55},
+  {id:"OPP-1119",m:"Müşteri 119",rep:"Ayşe Kaya",    b:"İç Anadolu", u:"Eğitim",      k:"Referral", a:"Closed Won",  t:113000,o:100,gun:39},
+  {id:"OPP-1120",m:"Müşteri 120",rep:"Burak Şahin",  b:"Karadeniz",  u:"Eğitim",      k:"Inbound",  a:"Qualification",t:72000, o:20, gun:17}
+];
+
+// ════════════════════════════════════════════════════════════════
+// COLORS
+// ════════════════════════════════════════════════════════════════
+const C = {
+  blue:  '#041b3c',
+  green: '#76ff03',
+  mid:   '#0072ce',
+  dark:  '#003d9b',
+  n300:  '#9aaab8',
+  n600:  '#4a6070',
+  b50:   '#ddeef9',
+  b200:  '#7ab8e0',
+  b500:  '#2e7fc0',
+  b800:  '#0d3d6e'
+};
+
+// ════════════════════════════════════════════════════════════════
+// FORMATTERS
+// ════════════════════════════════════════════════════════════════
+const _tryFmt = new Intl.NumberFormat('tr-TR', {style:'currency', currency:'TRY', maximumFractionDigits:0});
+const _pctFmt = new Intl.NumberFormat('tr-TR', {style:'percent',  maximumFractionDigits:1});
+const fmt    = v => _tryFmt.format(v);
+const fmtPct = v => _pctFmt.format(v);
+const fmtK   = v => v >= 1e6 ? (v/1e6).toFixed(1)+'M ₺' : v >= 1e3 ? (v/1e3).toFixed(0)+'K ₺' : v+'₺';
+
+// ════════════════════════════════════════════════════════════════
+// KPIs
+// ════════════════════════════════════════════════════════════════
+function renderKpis() {
+  let toplam = 0, won = 0, lost = 0, agirlikli = 0;
+  P.forEach(d => {
+    toplam    += d.t;
+    agirlikli += d.t * d.o / 100;
+    if (d.a === 'Closed Won')  won++;
+    if (d.a === 'Closed Lost') lost++;
+  });
+  document.getElementById('kpi-toplam').textContent    = fmt(toplam);
+  document.getElementById('kpi-kazanilan').textContent  = won + ' adet';
+  document.getElementById('kpi-oran').textContent       = fmtPct(won / (won + lost));
+  document.getElementById('kpi-agirlikli').textContent  = fmt(agirlikli);
+}
+
+// ════════════════════════════════════════════════════════════════
+// CHARTS
+// ════════════════════════════════════════════════════════════════
+Chart.defaults.font.family = "'Lato', sans-serif";
+Chart.defaults.color       = C.n600;
+
+function group(arr, key, valFn = () => 1) {
+  return arr.reduce((acc, d) => {
+    const k = d[key];
+    acc[k] = (acc[k] || 0) + valFn(d);
+    return acc;
+  }, {});
+}
+
+function createCharts() {
+  // ── 1. Aşama Dağılımı (yatay bar) ──────────────────────────
+  const STAGE_ORDER = ['Qualification','Proposal','Negotiation','Closed Won','Closed Lost'];
+  const STAGE_TR    = {'Qualification':'Nitelendirme','Proposal':'Teklif','Negotiation':'Müzakere','Closed Won':'Kazanıldı','Closed Lost':'Kaybedildi'};
+  const stageCnt    = group(P, 'a');
+  const stageCols   = STAGE_ORDER.map(s =>
+    s === 'Closed Won' ? C.green : s === 'Closed Lost' ? C.n300 : C.mid
+  );
+
+  new Chart(document.getElementById('stageChart'), {
+    type: 'bar',
+    data: {
+      labels:   STAGE_ORDER.map(s => STAGE_TR[s]),
+      datasets: [{
+        data:            STAGE_ORDER.map(s => stageCnt[s] || 0),
+        backgroundColor: stageCols,
+        borderRadius:    6,
+        barThickness:    28
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {display:false},
+        tooltip: {callbacks:{label: ctx => ` ${ctx.parsed.x} fırsat`}}
+      },
+      scales: {
+        x: {grid:{color:'#e4eaf0'}, ticks:{precision:0}},
+        y: {grid:{display:false}}
+      }
+    }
+  });
+
+  // ── 2. Bölge Geliri (dikey bar, sadece Closed Won) ─────────
+  const wonByRegion = group(P.filter(d => d.a === 'Closed Won'), 'b', d => d.t);
+  const regSorted   = Object.entries(wonByRegion).sort((a,b) => b[1]-a[1]);
+
+  new Chart(document.getElementById('regionChart'), {
+    type: 'bar',
+    data: {
+      labels:   regSorted.map(e => e[0]),
+      datasets: [{
+        label:               'Kazanılan Gelir',
+        data:                regSorted.map(e => e[1]),
+        backgroundColor:     C.mid,
+        hoverBackgroundColor:C.dark,
+        borderRadius:        6,
+        barThickness:        36
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{display:false},
+        tooltip:{callbacks:{label: ctx => ` ${fmt(ctx.parsed.y)}`}}
+      },
+      scales: {
+        x:{grid:{display:false}},
+        y:{grid:{color:'#e4eaf0'}, ticks:{callback: fmtK}}
+      }
+    }
+  });
+
+  // ── 3. Temsilci Performansı (yatay grouped bar) ─────────────
+  const repMap = {};
+  P.forEach(d => {
+    if (!repMap[d.rep]) repMap[d.rep] = {won:0, lost:0};
+    if (d.a === 'Closed Won')  repMap[d.rep].won++;
+    if (d.a === 'Closed Lost') repMap[d.rep].lost++;
+  });
+  const repSorted = Object.entries(repMap).sort((a,b) => b[1].won - a[1].won);
+
+  new Chart(document.getElementById('repChart'), {
+    type: 'bar',
+    data: {
+      labels: repSorted.map(e => e[0]),
+      datasets: [
+        {label:'Kazanıldı', data:repSorted.map(e => e[1].won),  backgroundColor:C.green, borderRadius:4, barThickness:12},
+        {label:'Kaybedildi',data:repSorted.map(e => e[1].lost), backgroundColor:C.n300,  borderRadius:4, barThickness:12}
+      ]
+    },
+    options: {
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{position:'bottom', labels:{boxWidth:12, padding:12}},
+        tooltip:{callbacks:{label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x}`}}
+      },
+      scales: {
+        x:{grid:{color:'#e4eaf0'}, ticks:{precision:0}},
+        y:{grid:{display:false}}
+      }
+    }
+  });
+
+  // ── 4. Ürün Dağılımı (donut) ────────────────────────────────
+  const prodCnt    = group(P, 'u');
+  const prodSorted = Object.entries(prodCnt).sort((a,b) => b[1]-a[1]);
+  const PROD_COLS  = [C.mid, C.dark, C.b500, C.b200, C.green];
+
+  new Chart(document.getElementById('productChart'), {
+    type: 'doughnut',
+    data: {
+      labels:   prodSorted.map(e => e[0]),
+      datasets: [{
+        data:            prodSorted.map(e => e[1]),
+        backgroundColor: PROD_COLS,
+        hoverOffset:     8,
+        borderWidth:     2,
+        borderColor:     '#fff'
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      cutout:'60%',
+      plugins: {
+        legend:{position:'bottom', labels:{boxWidth:12, padding:10}},
+        tooltip:{callbacks:{label: ctx => ` ${ctx.label}: ${ctx.parsed} adet`}}
+      }
+    }
+  });
+
+  // ── 5. Kaynak Kanalı (donut) ────────────────────────────────
+  const srcCnt    = group(P, 'k');
+  const srcSorted = Object.entries(srcCnt).sort((a,b) => b[1]-a[1]);
+  const SRC_COLS  = [C.blue, C.b800, C.b500, C.mid, C.green];
+
+  new Chart(document.getElementById('sourceChart'), {
+    type: 'doughnut',
+    data: {
+      labels:   srcSorted.map(e => e[0]),
+      datasets: [{
+        data:            srcSorted.map(e => e[1]),
+        backgroundColor: SRC_COLS,
+        hoverOffset:     8,
+        borderWidth:     2,
+        borderColor:     '#fff'
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      cutout:'60%',
+      plugins: {
+        legend:{position:'bottom', labels:{boxWidth:12, padding:10}},
+        tooltip:{callbacks:{label: ctx => ` ${ctx.label}: ${ctx.parsed} adet`}}
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// TABLE
+// ════════════════════════════════════════════════════════════════
+let currentPage = 1;
+const PAGE_SIZE = 10;
+
+const BADGE = {
+  'Closed Won':   {cls:'b-won',  tr:'Kazanıldı'},
+  'Closed Lost':  {cls:'b-lost', tr:'Kaybedildi'},
+  'Negotiation':  {cls:'b-neg',  tr:'Müzakere'},
+  'Proposal':     {cls:'b-prop', tr:'Teklif'},
+  'Qualification':{cls:'b-qual', tr:'Nitelendirme'}
+};
+
+function getFiltered() {
+  const a = document.getElementById('filter-asama').value;
+  const r = document.getElementById('filter-rep').value;
+  return P.filter(d => (!a || d.a === a) && (!r || d.rep === r));
+}
+
+function renderTable() {
+  const rows      = getFiltered();
+  const total     = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start  = (currentPage - 1) * PAGE_SIZE;
+  const end    = Math.min(start + PAGE_SIZE, total);
+  const slice  = rows.slice(start, end);
+
+  document.getElementById('table-meta').textContent =
+    `${total} fırsat · ${start + 1}–${end} gösteriliyor`;
+
+  document.getElementById('tbl-body').innerHTML = slice.map(d => {
+    const b = BADGE[d.a] || {cls:'', tr:d.a};
+    return `<tr>
+      <td>${d.id}</td>
+      <td>${d.m}</td>
+      <td>${d.rep}</td>
+      <td>${d.b}</td>
+      <td>${d.u}</td>
+      <td>${d.k}</td>
+      <td><span class="badge ${b.cls}">${b.tr}</span></td>
+      <td>${fmt(d.t)}</td>
+      <td>%${d.o}</td>
+      <td>${d.gun}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
+  document.getElementById('btn-prev').disabled = currentPage === 1;
+  document.getElementById('btn-next').disabled = currentPage === totalPages;
+}
+
+function applyFilter() { currentPage = 1; renderTable(); }
+function changePage(dir) { currentPage += dir; renderTable(); }
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+document.getElementById('header-date').textContent =
+  new Date().toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
+
+renderKpis();
+createCharts();
+renderTable();
+</script>
+</body>
+</html>
